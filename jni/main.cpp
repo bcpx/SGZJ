@@ -125,5 +125,7 @@ int main(int argc, char** argv) {
 
 	g_freelist.clear();//释放冻结列表数据
 	
+	//testxg
+
 	return EXIT_SUCCESS;
 }
