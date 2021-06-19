@@ -53,7 +53,7 @@ void freeStop() {
 
 int main(int argc, char** argv) {
 
-	printf("uid:%u\n", geteuid());
+	//printf("uid:%u\n", geteuid());
 
 	vector<char*>packHash;
 	//packHash.push_back((char*)"com.enjoymi.sgzj.mi\0");//ÄãµÄ
