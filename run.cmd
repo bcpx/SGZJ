@@ -4,4 +4,4 @@ adb shell chmod 777 /data/local/tmp/main
 start ndkBuildparam.exe "adb shell < trans.cmd"
 pause
 
-%ÐÞ¸´´íÎó%
+%ÐÞ¸´%
