@@ -58,74 +58,22 @@ int main(int argc, char** argv) {
 	vector<char*>packHash;
 	//packHash.push_back((char*)"com.enjoymi.sgzj.mi\0");//你的
 	//packHash.push_back((char*)"com.tencent.tmgp.enjoymisgzj");//我的
+	//com.tencent.tmgp.gqdfzz
+	packHash.push_back((char*)"gqdfzz");
 
-	packHash.push_back((char*)"sgzj");
-	packHash.push_back((char*)"enjoy");
-
-	mem.pid = mem.setPackageName(packHash);
+	mem.pid = mem.setPackageName(packHash, 100);
 	mem.threanNum = mem.getProcessThreadNum(mem.pid);
+
 
 	printf("Find game pid = %d\n", mem.pid);
 	printf("Game threadNum = %u\n", mem.threanNum);
 
-	OFFSET off1;
-	off1.add(-0x70, 30108);
-	off1.add(0x70, 30106);
-	AddressData first = mem.search_DWORD(30107, off1, Mem_A);
-
+	OFFSET xs;
 	
-	long zhanglingjian;
-	if (first.count > 0)//判断返回的地址结果数量是否>0
-		zhanglingjian = mem.ReadDword(first.addrs[0] - 0x14);
-
-	printf("zhanglingjian:0x%X|%ld\n", zhanglingjian, zhanglingjian);
-
-	OFFSET off2;
-	off2.add(-0x70, 44);
-	off2.add(-0x48, 200);
-	off2.add(-0x38, 1);
-	AddressData second = mem.search_DWORD(40, off2, Mem_A);
-	
-	FREE_ADDR freeAddr;
-	if (second.count > 0)//判断返回的地址结果数量是否>0
-	{
-		freeAddr.address = second.addrs[0] - 0x14;
-		freeAddr.value = zhanglingjian;
-	}
-	
-	freeAddList(freeAddr);//添加这个地址到冻结列表
-
-	printf("free list cat:\n");
-	for (FREE_ADDR obj : g_freelist) 
-	{
-		printf("address:0x%lX|value:0x%X %d\n", obj.address, obj.value, obj.value);//输出一下冻结列表,查看一下内容是否正确,可有可无
-	}
-
-	printf("set free ms is:0.1s\n");//1000000=1s
-	freeSleep(100000);
-	printf("start free\n");
-	freeStart();
+	AddressData adrdata = mem.search_DWORD(1065353216, xs, Mem_Cd);
+	mem.OutAddr(adrdata);
 
 
-	uint32_t cnt = 0;
-
-	while (cnt < 1) {
-		printf("%d\n", cnt);
-		usleep(1000000);//阻塞 主线程查看冻结效果
-		cnt++;
-	}
-	
-
-
-	first.freeBuff();//释放搜索的地址内存数据
-	second.freeBuff();
-
-	off1.append.clear();//释放掉添加的偏移数据
-	off2.append.clear();
-
-	g_freelist.clear();//释放冻结列表数据
-	
-	//testxg
 
 	return EXIT_SUCCESS;
 }

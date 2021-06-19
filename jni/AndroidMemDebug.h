@@ -100,30 +100,41 @@ size_t judgSize(int type)
 	return 4;
 }
 
-int memContrast(char *str)
+int memContrast(char *str,string &flags)
 {
-	if (strlen(str) == 0)
+	if (strlen(str) == 0 && flags.find("p") != -1)
 		return Mem_A;
+
 	if (strstr(str, "/dev/ashmem/") != NULL)
 		return Mem_As;
+
 	if (strstr(str, "/system/fonts/") != NULL)
 		return Mem_B;
-	if (strstr(str, "/data/app/") != NULL)
+
+	if (strstr(str, "/data") != NULL && flags.find("r-xp") != -1)
 		return Mem_Xa;
-	if (strstr(str, "/system/framework/") != NULL)
+
+	if (strstr(str, "/system") != NULL && flags.find("x") != -1)
 		return Mem_Xs;
+
 	if (strcmp(str, "[anon:libc_malloc]") == 0)
 		return Mem_Ca;
+
 	if (strstr(str, ":bss") != NULL)
 		return Mem_Cb;
-	if (strstr(str, "/data/data/") != NULL)
+
+	if (strstr(str, "/data/") != NULL && strstr(str, "/lib/") != NULL)
 		return Mem_Cd;
+
 	if (strstr(str, "[anon:dalvik") != NULL)
 		return Mem_J;
+
 	if (strcmp(str, "[stack]") == 0)
 		return Mem_S;
+
 	if (strcmp(str, "/dev/kgsl-3d0") == 0)
 		return Mem_V;
+
 	return Mem_O;
 }
 
@@ -133,24 +144,24 @@ class MemoryDebug
 {
   public:
 	pid_t pid = 0;			// 调试应用的PID
-	unsigned int threanNum = 0;
+	unsigned int threanNum = 0;//进程线程数量
 
   public:
   //设置调试的应用包名，返回PID
-    int setPackageName(vector<char*>&packName);
+	  int setPackageName(vector<char*>& packName, unsigned char minThreadnum);
     //获取模块的基址，@name：模块名，@index：模块在内存中的内存页位置(第几位，从1开始，默认1)
-    long getModuleBase(const char* name,int index = 1);
+	  long getModuleBase(const char* name, int index = 1);
 	//获取模块的BSS基址
-	long getBssModuleBase(const char *name);
+	  long getBssModuleBase(const char* name);
 	//读内存的基础函数
-	size_t preadv(long address, void *buffer, size_t size);
+	  size_t preadv(long address, void* buffer, size_t size);
 	//写内存的基础函数
 	size_t pwritev(long address, void *buffer, size_t size);
 	
 	//根据值搜索内存，并返回相应地址
 	template < class T > AddressData search(T value, int type, int mem, bool debug = false);
 	//修改内存地址值，返回-1，修改失败，返回1，修改成功
-	template < class T > int edit(T value,long address,int type,bool debug = false);
+	template < class T > int edit(T value, long address, int type, bool debug = false);
 	
 	//打印搜索的地址
 	void OutAddr(AddressData obj);
@@ -166,6 +177,7 @@ class MemoryDebug
 
 	unsigned int getProcessThreadNum(pid_t pid);
 	AddressData search_DWORD(int value, OFFSET offsets,int mem);
+	void setAddrDWORD(long addr, int value);
 };
 
 unsigned int MemoryDebug::getProcessThreadNum(pid_t pid) {
@@ -181,14 +193,15 @@ unsigned int MemoryDebug::getProcessThreadNum(pid_t pid) {
 				sscanf(buffer, "Threads:%u", &threadNum);
 				//puts(buffer);
 				//printf("readThread->%u\n", threadNum);
+				break;
 			}
 		}
+		fclose(fpStatus);
 	}
-	fclose(fpStatus);
 	return threadNum;
 }
 
-int MemoryDebug::setPackageName(vector<char*>&packName)//AndroidMemDebug.cpp
+int MemoryDebug::setPackageName(vector<char*>&packName,unsigned char minThreadnum)//AndroidMemDebug.cpp
 {
 
 	int id = -1;
@@ -198,30 +211,35 @@ int MemoryDebug::setPackageName(vector<char*>&packName)//AndroidMemDebug.cpp
 	char cmdline[256];
 	struct dirent *entry;
 	dir = opendir("/proc");
-	while ((entry = readdir(dir)) != NULL)
-	{
-		id = atoi(entry->d_name);
-		if (id != 0)
+	if (dir != NULL) {
+		while ((entry = readdir(dir)) != NULL)
 		{
-			sprintf(filename, "/proc/%d/cmdline", id);
-			fp = fopen(filename, "r");
-			if (fp)
+			id = atoi(entry->d_name);
+			if (id != 0)
 			{
-				fgets(cmdline, sizeof(cmdline), fp);
-				fclose(fp);
-				//printf("%d:%s\n", id, cmdline);
-				int i;
-				for (i = 0; i < packName.size();i++) {
-					//printf("%s\n", entry);
-					if (strstr(cmdline, packName[i]) == NULL)//如果结果是null,那么就是没有找到
-						break;
+				sprintf(filename, "/proc/%d/cmdline", id);
+				fp = fopen(filename, "r");
+				if (fp)
+				{
+					fgets(cmdline, sizeof(cmdline), fp);
+					fclose(fp);
+					//printf("%d:%s\n", id, cmdline);
+					int i;
+					for (i = 0; i < packName.size(); i++) {
+						//printf("%s\n", entry);
+						//如果结果是null,那么就是没有找到
+						if (strstr(cmdline, packName[i]) == NULL)
+							break;
+					}
+					if (i == packName.size() && this->getProcessThreadNum(id) > minThreadnum) {
+						closedir(dir);
+						return id;
+					}
 				}
-				if (i == packName.size() && this->getProcessThreadNum(id) > 140)
-					return id;
 			}
 		}
+		closedir(dir);
 	}
-	closedir(dir);
 	return -1;
 }
 
@@ -332,15 +350,28 @@ template < class T > AddressData MemoryDebug::search(T value, int type, int mem,
 		tmp = (long*)calloc(1024000,sizeof(long));
 		while (fgets(line, sizeof(line), fp))
 		{
-			mp = (MemPage *) calloc(1, sizeof(MemPage));
+			mp = (MemPage*)calloc(1, sizeof(MemPage));
 			sscanf(line, "%p-%p %s %*p %*p:%*p %*p   %[^\n]%s", &mp->start, &mp->end, mp->flags, mp->name);
+
 
 			// 判断内存范围和内存页是否可读(如果内存页不可读，此时如果去
 			// 读取这个地址，系统便会抛出异常[信号11,分段错误]并终止调试进程)
 
-			if ((memContrast(mp->name) == mem || mem == Mem_Auto)
-				&& strstr(mp->flags, "r") != NULL)
+			string local_flags;
+			local_flags = mp->flags;
+
+			if (strstr(mp->flags, "r") == NULL)
+				continue;
+
+			//printf("%p,%p\n", mp->start, mp->end);
+
+
+			if ((memContrast(mp->name, local_flags) == mem || mem == Mem_Auto))
 			{
+				//printf("%p-%p\n", mp->start, mp->end);
+
+
+
 				mp->buf = (void *)malloc(mp->end - mp->start);//创建一个与内存页同大小的堆空间
 
 				if (mp->buf == NULL)//防止异常
@@ -361,7 +392,7 @@ template < class T > AddressData MemoryDebug::search(T value, int type, int mem,
 						*(T *) (mp->buf + i * size)) == value
 					)*/
 					//如果  (*取泛类型值)(泛类型指针*)(缓冲区起始+偏移字节) == 欲查找的值
-					if(	*(T*)((long)(mp->buf) + i * size) == value	)
+					if (*(T*)((long)(mp->buf) + i * size) == value)
 					{
 						//存储所匹配值的地址到自己创建的缓存地址中
 						*(tmp + count) = mp->start + i * size;
@@ -439,7 +470,12 @@ AddressData MemoryDebug::search_DWORD(int value, OFFSET offsets,int men) {
 	return ret;
 }
 
+void MemoryDebug::setAddrDWORD(long addr,int value) {
+	this->edit<int>(value, addr, DWORD, false);
+}
+
 void MemoryDebug::OutAddr(AddressData obj) {
+	printf("地址数量:%d\n", obj.count);
 	for (int i = 0; i < obj.count; i++) {
 		printf("%lX\n", obj.addrs[i]);
 	}

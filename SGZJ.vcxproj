@@ -94,18 +94,20 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-        <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\armeabi-v7a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
-        <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\armeabi-v7a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\armeabi-v7a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\armeabi-v7a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
     <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\armeabi-v7a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-        <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\armeabi-v7a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
-        <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\armeabi-v7a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\armeabi-v7a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\armeabi-v7a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
     <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\armeabi-v7a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\arm64-v8a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <NMakeBuildCommandLine>$(VS_NdkRoot)\ndk-build.cmd &amp;&amp; copy $(MSBuildProjectDirectory)\libs\arm64-v8a\main $(MSBuildProjectDirectory)\main  &amp;&amp;  $(MSBuildProjectDirectory)\run.cmd</NMakeBuildCommandLine>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
   </PropertyGroup>
